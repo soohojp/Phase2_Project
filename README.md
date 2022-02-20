@@ -1,285 +1,206 @@
-# Phase 2 Project Description
+# Coding Notebook for Phase 2 project
+## Soo Ho (John) Park, Nicholas Wertz, Nicholas Kennedy
 
-Another module down - you're almost half way there!
+# Introduction
 
-![awesome](https://raw.githubusercontent.com/learn-co-curriculum/dsc-phase-2-project-v2-3/main/halfway-there.gif)
+King County is one of the most coveted real estate areas in Washington state, especially as the metropolitan hub of Seattle attracts more and more people. Our stakeholder is a house-flipping company that aims to buy real estate in its original condition at the lowest price possible and quickly sell it to a new buyer at a profit after renovation. However, due to the sheer number of homes and a fluctuating market, our stakeholder is having a difficult time estimating current house prices. What homes can be “flipped” and yield the highest profits?
 
-All that remains in Phase 2 is to put your newfound data science skills to use with a large project!
+The KaPow Consulting Team, comprised of data scientists, can offer a set of recommendations tailored to a house-flipper’s needs by utilizing a multiple regression model as a predictive measure. We analyze which indicators can predict the market sale price of a home and find which undervalued homes have the potential to be sold at a higher price. First, our data analysis found that price is heavily influenced by the size of living space, closeness to water, and whether the home is in the Northwest or West regions of King County. From our predictive multiple regression model, we then ascertained a series of undervalued homes that had a higher predicted value than the actual value it was sold. Analyzing a case study that meets the criteria of an undervalued home, we show how much potential profit could be made. By following these recommendations, our stakeholders can make more informed decisions when investing in undervalued homes with a high potential for profit. 
 
-In this project description, we will cover:
+![King County Flag](pictures/Flag_of_King_County,_Washington.svg.png)
 
-* Project Overview: the project goal, audience, and dataset
-* Deliverables: the specific items you are required to produce for this project
-* Grading: how your project will be scored
-* Getting Started: guidance for how to begin working
 
-## Project Overview
+# Data Understanding
+Our original data set, `kc_house_data.csv` contained 21597 home sales with 21 columns from 2014-2015 in King County, Washington, the county comprised of Seattle and the surrounding areas. In addition to sale price and home id, 19 other standard descriptors of including square footage, location, grade, waterfront view etc were given for these some 20K data points. Of these sales, 353 were duplicates, meaning homes in this subset were sold more than once in the 2-year span. These sales are for 177 unique homes, a very small sample given our original data set. Nevertheless, these represent the only real data of house flipping in our set, and this is important for our House-Flipping stake-holders.  
 
-For this project, you will use multiple linear regression modeling to analyze house sales in a northwestern county.
+# Data Preparation
+### Data Cleaning: 
+Starting data preparation, we first extracted and removed the duplicate ids, the set of our flipped homes into a separate dataset, resales_df.csv for more of a case-study-type analysis. <a href =https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb>https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb</a>, section 1.
 
-### Business Problem
+With these removed and set aside, we then removed outliers that were 3 standard deviations away from the mean on the numerical variables with high variance except for our target variable, sale price. These measures reduced the size of our dataset to 21059 data points. Documentation on how this was done can be found in our git repo at <a href =https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb>https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb </a> section 4.
 
-It is up to you to define a stakeholder and business problem appropriate to this dataset.
+### Feature Engineering: 
+After our EDA, we chose to engineer features based on geographic location: zip code, latitude and longitude. Zip code was binned and dummy- encoded to give us 3 new variables, `label_urban`, `label_suburban` and `label_rural`. Documentation in <a href =https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb>https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb </a>  section 2.
 
-If you are struggling to define a stakeholder, we recommend you complete a project for a real estate agency that helps homeowners buy and/or sell homes. A business problem you could focus on for this stakeholder is the need to provide advice to homeowners about how home renovations might increase the estimated value of their homes, and by what amount.
+We also used latitude and longitude to engineer 2 additional features, region and waterfront distance. Geographical coordinates were binned and dummy encoded in 9 region variables. N, NE, E, SE, S, S, W, NW and central King County. <a href =https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb>https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb </a> section 3
 
-### The Data
+We finally created variable for distance to waterfront which returned the distance to the nearest property with a waterfront view. To do this we first created a cooridinates column that contained both longitude and latitude as a tuple. Next we defined a function called closest_water(coordinate), that looked at the list of waterfront property coordinates, and returned the distance to the closest one given a set of coordinates. Mapping this function to our dataframe coordinates, we obtained the distance in km to the nearest waterfront property for all of our homes, and called this variable closest_water. Documentation found here: <a href =https://github.com/soohojp/Phase2_Project/blob/main/old_notebooks/clean_and_FE.ipynb>https://github.com/soohojp/Phase2_Project/blob/old_notebooks/main/clean_and_FE.ipynb </a>  section 5.
 
-This project uses the King County House Sales dataset, which can be found in  `kc_house_data.csv` in the data folder in this assignment's GitHub repository. The description of the column names can be found in `column_names.md` in the same folder. As with most real world data sets, the column names are not perfectly described, so you'll have to do some research or use your best judgment if you have questions about what the data means.
+We merged all of this into a master data file which will proceed to use in our analysis
 
-It is up to you to decide what data from this dataset to use and how to use it. If you are feeling overwhelmed or behind, we recommend you **ignore** some or all of the following features:
 
-* `date`
-* `view`
-* `sqft_above`
-* `sqft_basement`
-* `yr_renovated`
-* `zipcode`
-* `lat`
-* `long`
-* `sqft_living15`
-* `sqft_lot15`
+# The Process of Making a Multiple Linear Regression Model
+In order to create the most effective multiple linear regression model, we took the following steps and modifications:
+- Splitting our train and test data 8:2 ratio
+- Creating a dummy regression basline model using mean price
+- Scaling our train data and then fitting it to the linear regression model
+- Eliminating predictors predictors with low Pearson correlation or P-value in relation to the target
+- Making new variables such as log-transformed distance to waterfront, bins by community type, bins by region
+- Trying the model on our test data
+- Checking the heatmap and VIF for multicollinearity
+- Verifying for a normal distribution of residuals and heteroskedasticity
 
-### Key Points
+In total, we completed five models, each of which honed in more deeply on the relevant predictors of home sales price. We will highlight some of the important findings that led us to our final model.
 
-* **Your goal in regression modeling is to yield findings to support relevant recommendations. Those findings should include a metric describing overall model performance as well as at least two regression model coefficients.** As you explore the data and refine your stakeholder and business problem definitions, make sure you are also thinking about how a linear regression model adds value to your analysis. "The assignment was to use linear regression" is not an acceptable answer! You can also use additional statistical techniques other than linear regression, so long as you clearly explain why you are using each technique.
+### Choosing to Log-Transform Distance to Water:
+In looking at the distribution of `closest_water`, we see that it is not normally distributed: To make this feature better fit our assumptions for linear regression, we decided to take the log of distance to waterfront, which returned a more normal distribution. We also believe that using the log makes conceptual sense for this feature, as distance to water is much more impactful at closer distances, when you can walk, run and bike to it. It has increasingly, and non-linearly diminishing impact on home prices as the distance to water lengthens. We compare both regular and the log-transformed distance to waterfront below to show how it better meets our assumptions for linear regression.
 
-* **You should demonstrate an iterative approach to modeling.** This means that you must build multiple models. Begin with a basic model, evaluate it, and then provide justification for and proceed to a new model. After you finish refining your models, you should provide 1-3 paragraphs in the notebook discussing your final model.
+![Log-Transformed Distance to Waterfront_Count](pictures/log_transformed_water_count.png)
 
-* **Data visualization and analysis are no longer explicit project requirements, but they are still very important.** In Phase 1, your project stopped earlier in the CRISP-DM process. Now you are going a step further, to modeling. Data visualization and analysis will help you build better models and tell a better story to your stakeholders.
+### Comparing our assumptions for linear regression visually:
+Notice above how the log transformed distance to water (Right) is much more successful at meeting our assumption of being normally distributed. With these to assumptions validated for the log transformed distance to water, we proceed to check the assumption of linearity below:
 
-## Deliverables
+![Log-Transformed Distance to Waterfront_Price](pictures/log_transformed_water_price.png)
 
-There are three deliverables for this project:
 
-* A **non-technical presentation**
-* A **Jupyter Notebook**
-* A **GitHub repository**
+Notice above how the log transformed distance to water (Right) is much more successful at meeting our assumption of linearity with our target variable, `price`. With these to assumptions validated for the log transformed distance to water, we choose this as our new variable instead of distance to water
 
-The deliverables requirements are almost the same as in the Phase 1 Project, and you can review those extended descriptions [here](https://github.com/learn-co-curriculum/dsc-phase-1-project-v2-3#deliverables). In general, everything is the same except the "Data Visualization" and "Data Analysis" requirements have been replaced by "Modeling" and "Regression Results" requirements.
 
-### Non-Technical Presentation
+# Final Model
+The variables used in our final model
+metrics_list5 = ['price', 'sqft_living', 'log_water', 'group_NW','group_SW','group_W']
 
-Recall that the non-technical presentation is a slide deck presenting your analysis to ***business stakeholders***, and should be presented live as well as submitted in PDF form on Canvas.
+![Final Model OLS](pictures/finalmodel_ols.png)
 
-We recommend that you follow this structure, although the slide titles should be specific to your project:
+## Checking the VIF
+Again we see if our assumption of no multicolinearity is violated. 
 
-1. Beginning
-    - Overview
-    - Business and Data Understanding
-2. Middle
-    - **Modeling**
-    - **Regression Results**
-3. End
-    - Recommendations
-    - Next Steps
-    - Thank you
+![Final Model VIF](pictures/finalmodel_vif.png)
 
-Make sure that your discussion of modeling and regression results is geared towards a non-technical audience! Assume that their prior knowledge of regression modeling is minimal. You don't need to explain how linear regression works, but you should explain why linear regression is useful for the problem context. Make sure you translate any metrics or coefficients into their plain language implications.
 
-The graded elements for the non-technical presentation are the same as in [Phase 1](https://github.com/learn-co-curriculum/dsc-phase-1-project-v2-3#deliverables).
+### Deciding on this as our final model
+The VIFs above are all under 5, meaning this model passes the test of multicolinearty. It's R-squared has not been reduced by much and we are now only using 5 variables. 4 of which are based simply off of geographic coordinates. It's simplicity gives it practical power, as these are all very easy to track. 
 
-### Jupyter Notebook
+**64-65%** of the variation in `price` is explained by our model. We meet our assumptions for linear regression and proceed to further analyze it. Below we do a little data house-keeping
 
-Recall that the Jupyter Notebook is a notebook that uses Python and Markdown to present your analysis to a ***data science audience***. You will submit the notebook in PDF format on Canvas as well as in `.ipynb` format in your GitHub repository.
 
-The graded elements for the Jupyter Notebook are:
+### Unscaling our final model to gain additional insights with more conceptually-friendly coefficients
+Next, we check our model on unscaled train-data to see how the coefficients look. 
 
-* Business Understanding
-* Data Understanding
-* Data Preparation
-* **Modeling**
-* **Regression Results**
-* Code Quality
+![Final Model OLS Unscaled](pictures/finalmodel_ols_unscaled.png)
 
-### GitHub Repository
 
-Recall that the GitHub repository is the cloud-hosted directory containing all of your project files as well as their version history.
+## Interpretation of our final model unscaled
+- As you increase living area sq ft by 1, our model predicts an increase in price of almost \$270 USD
+- As you descrease distance to water by 1%, our model predicts and increase in price of \$823 USD
+- NW: being located in the NW region predicts a higher price by 13K USD
+- SW: being located in the SW region predicts a lower price by 17K USD
+- W: being located in the W region predicts a lower price by 10K USD
 
-The requirements are the same as in [Phase 1](https://github.com/learn-co-curriculum/dsc-phase-1-project-v2-3#github-repository), except for the required sections in the `README.md`.
 
-For this project, the `README.md` file should contain:
+# Comparing R2 of model with test data
 
-* Overview
-* Business and Data Understanding
-  * Explain your stakeholder audience here
-* **Modeling**
-* **Regression Results**
-* Conclusion
+![Final Model R2](pictures/finalmodel_R2.png)
 
-Just like in Phase 1, the `README.md` file should be the bridge between your non technical presentation and the Jupyter Notebook. It should not contain the code used to develop your analysis, but should provide a more in-depth explanation of your methodology and analysis than what is described in your presentation slides.
+### Interpretatin Test Vs. Train
+The R-squared of the model with the test data is very close to that of the train data. A close R-suqared value for both the train and test sets signify that the model is generalizing well. Thus, our final model exhibits qualities of a good model.
 
-## Grading
+##  Calculating RSME
+Here, we look at the root-mean-squared error, which gives us a value for on averege how much our predictions vary from the actual data in our sample
 
-***To pass this project, you must pass each project rubric objective.*** The project rubric objectives for Phase 2 are:
+![Final Model RSME](pictures/finalmodel_RSME.png)
 
-1. Attention to Detail
-2. Statistical Communication
-3. Data Preparation Fundamentals
-4. Linear Modeling
 
-### Attention to Detail
+### Interpreting RSME: 
+To get a summarized measure over all the instances in the test and training set, we calculated the Root Mean Squared Error. A big difference in value between the test and training set RSME is an indication of overfitting. But, considering that prices of homes are in the thousands if not a million-dollar range, we deemed that the difference in RSME of 8606.85 is not that high.
 
-Just like in Phase 1, this rubric objective is based on your completion of checklist items. ***In Phase 2, you need to complete 70% (7 out of 10) or more of the checklist elements in order to pass the Attention to Detail objective.***
+The total RSME is fairly high for this model, but this as we see below is because of high-priceed outliers. For most house-prices, our model is fairly accurate
 
-**NOTE THAT THE PASSING BAR IS HIGHER IN PHASE 2 THAN IT WAS IN PHASE 1!**
+## Normal Distribution of Residuals
 
-The standard will increase with each Phase, until you will be required to complete all elements to pass Phase 5 (Capstone).
+![Final Model qqplot](pictures/finalmodel_qqplot.png)
 
-#### Exceeds Objective
+Q-Q plots let you check that the data meet the assumption of normality. They compare the distribution of your data to a normal distribution by plotting the quartiles of your data against the quartiles of a normal distribution. If your data are normally distributed then they should form an approximately straight line. Notice the points fall along a line in the middle of the graph, but curve off in the extremities with heavy tails. This may suggest that the data may have outliers that fall beyond the model.
 
-80% or more of the project checklist items are complete
+## Heteroskedasticity and Lack of Trend in Errors
 
-#### Meets Objective (Passing Bar)
+![Final Model heteroskedasticity](pictures/finalmodel_heteroskedasticity.png)
 
-70% of the project checklist items are complete
+Heteroscedasticity produces a distinctive fan or cone shape in residual plots, meaning that as the fitted values increases, the variance of the residual also increases. Heteroscedasticity is a problem because OLS regression assumes that all residuals are drawn from a population that has a constant variance. As we can see from the graph above, there is a slight cone shape, meaning that there may be some heteroscedasticity.
 
-#### Approaching Objective
+# Multicolinearity
 
-60% of the project checklist items are complete
+![Final Model heatmap](pictures/finalmodel_heatmap.png)
 
-#### Does Not Meet Objective
+The interpretation of a regression coefficient is that it represents the average change in the dependent variable for each 1 unit change in a predictor, assuming that all the other predictor variables are kept constant. But, when multicolinearity is observed, it complicates this interpretation. With multicolinearity, 1 unit change in a predictor can not only change the dependent variable, but also another independent variable. Since multicollinearity is less than 0.7 between each of the variables, we can deem that the model is not multicollinear.
 
-50% or fewer of the project checklist items are complete
+ # Undervalued Homes
 
-### Statistical Communication
+A house flipper's main concern is to find which homes are being sold at a lower price in the market than its supposed value. Thus, my using the price predictor from our model, we aimed to pinpoint undervalued homes. We first combined the Train and Test datasets, adding on the longitude and latitude information onto it as well. Then, we created a new column to measure the difference in actual price and predicted price. From price_table_final, we filtered out homes that had a positive price difference, which means that its predicted price is higher than the actual price that it was sold.
 
-Recall that communication is one of the key data science "soft skills". In Phase 2, we are specifically focused on Statistical Communication. We define Statistical Communication as:
+The potential average profit yield from this batch of undervalued homes is approximately $134010.36.
 
-> Communicating **results of statistical analyses** to diverse audiences via writing and live presentation
+![Undervalued Homes Map](pictures/undervaluedhomes_map.png)
 
-Note that this is the same as in Phase 1, except we are replacing "basic data analysis" with "statistical analyses".
 
-High-quality Statistical Communication includes rationale, results, limitations, and recommendations:
+## Case Study
 
-* **Rationale:** Explaining why you are using statistical analyses rather than basic data analysis
-  * For example, why are you using regression coefficients rather than just a graph?
-  * What about the problem or data is suitable for this form of analysis?
-  * For a data science audience, this includes your reasoning for the changes you applied while iterating between models.
-* **Results:** Describing the overall model metrics and feature coefficients
-  * You need at least one overall model metric (e.g. r-squared or RMSE) and at least two feature coefficients.
-  * For a business audience, make sure you connect any metrics to real-world implications. You do not need to get into the details of how linear regression works.
-  * For a data science audience, you don't need to explain what a metric is, but make sure you explain why you chose that particular one.
-* **Limitations:** Identifying the limitations and/or uncertainty present in your analysis
-  * This could include p-values/alpha values, confidence intervals, assumptions of linear regression, missing data, etc.
-  * In general, this should be more in-depth for a data science audience and more surface-level for a business audience.
-* **Recommendations:** Interpreting the model results and limitations in the context of the business problem
-  * What should stakeholders _do_ with this information?
+As a case study, we selected one of the homes near the average potential profit yield metric. By utilizing the coordinates (latitude, longitude) and the zipcode, we were able to search its exact location via Google Maps.
 
-#### Exceeds Objective
+Address: 2751 NE 103rd St.
 
-Communicates the rationale, results, limitations, and specific recommendations of statistical analyses
+#### Image of 2751 NE 103rd St. Courtesy of Goolge Street View
 
-> See above for extended explanations of these terms.
+![Real World Image of Case Study](pictures/casestudy.png)    
 
-#### Meets Objective (Passing Bar)
+#### Location Via Google Maps
 
-Successfully communicates the results of statistical analyses without any major errors
+![Google Map Location](pictures/casestudy2.png)
 
-> The minimum requirement is to communicate the _results_, meaning at least one overall model metric (e.g. r-squared or RMSE) as well as at least two feature coefficients. See the Approaching Objective section for an explanation of what a "major error" means.
+This example fits our predictions very closely. It is located in the Northwest region of King County, which also is relatively close to water. The size of the living space could be possibly improved to further raise the price. For such homes, Kapaw Consulting can further assist in investigating whether changing the mutable features such as home size, grade, condition, or interior design could potentially raise the home price.
 
-#### Approaching Objective
+# Further Considerations: Grade as an Additional Factor
 
-Communicates the results of statistical analyses with at least one major error
+In our final model, we unfortunately could not utilize grade due to its high multicollinearity with sqft_living. 
+We still believe that grade is a major factor in the price of a home, and while the livable area of a home may contribute to its grade, it is more to do with the quality of the materials and craftsmanship. It is also reasonable to assume someone may want to spend more on higher grade home than on more square feet.
 
-> A major error means that some aspect of your explanation is fundamentally incorrect. For example, if a feature coefficient is negative and you say that an increase in that feature results in an increase of the target, that would be a major error. Another example would be if you say that the feature with the highest coefficient is the "most statistically significant" while ignoring the p-value. One more example would be reporting a coefficient that is not statistically significant, rather than saying "no statistically significant linear relationship was found"
+We decided to run a statmodel ols linear regression test. Like all our other linear regressions, we split it into a 80% train and 20% test data. We luckily since we only have one variable we are examining, there is no need for us to standard scale. So we move on to fitting our training data to our model using statmodels's ols feature
 
-> "**If a coefficient's t-statistic is not significant, don't interpret it at all.** You can't be sure that the value of the corresponding parameter in the underlying regression model isn't really zero." _DeVeaux, Velleman, and Bock (2012), Stats: Data and Models, 3rd edition, pg. 801_. Check out [this website](https://web.ma.utexas.edu/users/mks/statmistakes/TOC.html) for extensive additional examples of mistakes using statistics.
+![Grade OLS](pictures/grade_ols.png)    
 
-> The easiest way to avoid making a major error is to have someone double-check your work. Reach out to peers on Slack and ask them to confirm whether your interpretation makes sense!
+#### The above states that our simple model that includes the grade as our only inferential perameter predicts 44.6% of the variation in home prices in our training data. Our coefficent tells us that for every change in one numeric grade, we see, on average, a jump in home price of \$210,000.
 
-#### Does Not Meet Objective
+Next we wanted to see our median price, median sqft_living, and median price per sqft_living for each group. We then graphed both of these results below.
 
-Does not communicate the results of statistical analyses
+![Median Home Price of Each Grade](pictures/grade_medianprice.png)    
 
-> It is not sufficient to just display the entire results summary. You need to pull out at least one overall model metric (e.g. r-squared, RMSE) and at least two feature coefficients, and explain what those numbers mean.
 
-### Data Preparation Fundamentals
+#### Now that we see this visually, we consider if this makes sense. 
+At first, the grade 3's appear to have a median price higher than the grade 4's and 5's! However, if we do a quick value count of grades,
 
-We define this objective as:
+![Median ](pictures/grade_medianprice_valuecounts.png)    
 
-> Applying appropriate **preprocessing** and feature engineering steps to tabular data in preparation for statistical modeling
 
-The two most important components of preprocessing for the Phase 2 project are:
 
-* **Handling Missing Values:** Missing values may be present in the features you want to use, either encoded as `NaN` or as some other value such as `"?"`. Before you can build a linear regression model, make sure you identify and address any missing values using techniques such as dropping or replacing data.
-* **Handling Non-Numeric Data:** A linear regression model needs all of the features to be numeric, not categorical. For this project, ***be sure to pick at least one non-numeric feature and try including it in a model.*** You can identify that a feature is currently non-numeric if the type is `object` when you run `.info()` on your dataframe. Once you have identified the non-numeric features, address them using techniques such as ordinal or one-hot (dummy) encoding.
+### We see that there is only a single grade 3 home in our data! 
+We will consider the single grade 3 home an unusually highly priced home (most likely an outlier if we had more grade 3 homes to compare it to) and move on. 
 
-There is no single correct way to handle either of these situations! Use your best judgement to decide what to do, and be sure to explain your rationale in the Markdown of your notebook.
+Moving on to grade 4, we can visually see that the lowest grade homes have the lowest median home price and the highest grade, grade 13, have the highest price. This makes sense. Next we will further examine the price per sqft for each grade.
 
-Feature engineering is encouraged but not required for this project.
+![Price per Sqft for Each Grade](pictures/grade_price_per_sqft.png)    
 
-#### Exceeds Objective
 
-Goes above and beyond with data preparation, such as feature engineering or merging in outside datasets
+#### At first glance this again may not make sense! 
+How can the lowest grade in our model have the absolute highest median price square foot?!
+We recall that we considered our single grade 3 home a probable outlier, skewing our data. 
 
-> One example of feature engineering could be using the `date` feature to create a new feature called `season`, which represents whether the home was sold in Spring, Summer, Fall, or Winter.
+But even if that is true, our price seems to decrease from grades 4 to to 7 before going back up as we would expect! Perhaps something is "diluting" the price per square foot? We looked at our 'med_price_by_grade' dataframe to see what was going on. 
 
-> One example of merging in outside datasets could be finding data based on ZIP Code, such as household income or walkability, and joining that data with the provided CSV.
 
-#### Meets Objective (Passing Bar)
+It can be seen that because our sqft_living value is continually increasing, this causes our "dilution" of price per sqft value. Jumping from grade 4 to 5, our sqft_living increases by 28.5%, while their respective prices are only a 13.1% change. Any time our price change percentage is beaten by our sqft_living percentage, we have "diluted" our value per sqft of our homes. 
 
-Successfully prepares data for modeling, including converting at least one non-numeric feature into ordinal or binary data and handling missing data as needed
+Looking at the change from grade 10 to 11 we have a 22% increase in living space and a 39.7% change in price, registering as a positive change on our graph.
 
-> As a reminder, you can identify the non-numeric features by calling `.info()` on the dataframe and looking for type `object`.
+We then created a new category that is the percent change between each grade. As we had no grade 1 or 2 houses, we could not get the difference in price between them or for our grade 3 homes. We also must throw out the grade 4 result as our probable outlier grade 3 has skewed it . These results were then graphed as both a bar and line graph. 
 
-> Your final model does not necessarily need to include any features that were originally non-numeric, but you need to demonstrate your ability to handle this type of data.
+We can see that our grade 3 has no result for percent change and our grade 4 has been massively skewed and should be ignored unless we obtain more data in the future. We then graphed our remaining results to visually interpret them.
 
-#### Approaching Objective
+![% Change in Home Price per Sqare Foot](pictures/grade_%change_per_sqft.png)    
 
-Prepares some data successfully, but is unable to utilize non-numeric data
 
-> If you simply subset the dataframe to only columns with type `int64` or `float64`, your model will run, but you will not pass this objective.
+As you can see, it would be best practice to begin with a grade 7 or lower house, then during a flip, rennovate the home until it is a grade 8 or higher as there are massive possible profit gains.
 
-#### Does Not Meet Objective
 
-Does not prepare data for modeling
+# Conclusion
 
-### Linear Modeling
-
-According to [Kaggle's 2020 State of Data Science and Machine Learning Survey](https://www.kaggle.com/kaggle-survey-2020), linear and logistic regression are the most popular machine learning algorithms, used by 83.7% of data scientists. They are small, fast models compared to some of the models you will learn later, but have limitations in the kinds of relationships they are able to learn.
-
-In this project you are required to use linear regression as the primary statistical analysis, although you are free to use additional statistical techniques as appropriate.
-
-#### Exceeds Objective
-
-Goes above and beyond in the modeling process, such as recursive feature selection
-
-#### Meets Objective (Passing Bar)
-
-Successfully builds a baseline model as well as at least one iterated model, and correctly extracts insights from a final model without any major errors
-
-> We are looking for you to (1) create a baseline model, (2) iterate on that model, making adjustments that are supported by regression theory or by descriptive analysis of the data, and (3) select a final model and report on its metrics and coefficients
-
-> Ideally you would include written justifications for each model iteration, but at minimum the iterations must be _justifiable_
-
-> For an explanation of "major errors", see the description below
-
-#### Approaching Objective
-
-Builds multiple models with at least one major error
-
-> The number one major error to avoid is including the target as one of your features. For example, if the target is `price` you should NOT make a "price per square foot" feature, because that feature would not be available if you didn't already know the price.
-
-> Other examples of major errors include: using a target other than `price`, attempting only simple linear regression (not multiple linear regression), dropping multiple one-hot encoded columns without explaining the resulting baseline, or using a unique identifier (`id` in this dataset) as a feature.
-
-#### Does Not Meet Objective
-
-Does not build multiple linear regression models
-
-## Getting Started
-
-Please start by reviewing the contents of this project description. If you have any questions, please ask your instructor ASAP.
-
-Next, you will need to complete the [***Project Proposal***](#project_proposal) which must be reviewed by your instructor before you can continue with the project.
-
-Here are some suggestions for creating your GitHub repository:
-
-1. Fork the [Phase 2 Project Repository](https://github.com/learn-co-curriculum/dsc-phase-2-project-v2-3), clone it locally, and work in the `student.ipynb` file. Make sure to also add and commit a PDF of your presentation to your repository with a file name of `presentation.pdf`.
-2. Or, create a new repository from scratch by going to [github.com/new](https://github.com/new) and copying the data files from the Phase 2 Project Repository into your new repository.
-   - Recall that you can refer to the [Phase 1 Project Template](https://github.com/learn-co-curriculum/dsc-project-template) as an example structure
-   - This option will result in the most professional-looking portfolio repository, but can be more complicated to use. So if you are getting stuck with this option, try forking the project repository instead
-
-## Summary
-
-This is your first modeling project! Take what you have learned in Phase 2 to create a project with a more sophisticated analysis than you completed in Phase 1. You will build on these skills as we move into the predictive machine learning mindset in Phase 3. You've got this!
+Our data analysis suggests that price has a statistically significant correlation with the size of living space, closeness to water, and the region in which it is located in. By employing a multiple regression model with the aforementioned features, we were able to extract all of the undervalued homes from the original dataset. Homes that had a higher predicted price in the model than the actual price fit the criteria of undervalued homes. The KaPow Consulting Team recommends that our stakeholders invest in such undervalued homes, as they may have a higher potential for profit yield. The case study conducted at the end goes further to demonstrate how much profit could be up for grabs.
