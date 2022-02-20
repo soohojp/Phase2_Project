@@ -1,4 +1,4 @@
-# Coding Notebook for Phase 2 project
+# Multiple Regression Model on Real Estate of King County Washington, USA
 ## Soo Ho (John) Park, Nicholas Wertz, Nicholas Kennedy
 
 # Introduction
