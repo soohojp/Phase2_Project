@@ -104,7 +104,7 @@ Here, we look at the root-mean-squared error, which gives us a value for on aver
 ### Interpreting RSME: 
 To get a summarized measure over all the instances in the test and training set, we calculated the Root Mean Squared Error. A big difference in value between the test and training set RSME is an indication of overfitting. But, considering that prices of homes are in the thousands if not a million-dollar range, we deemed that the difference in RSME of 8606.85 is not that high.
 
-The total RSME is fairly high for this model, but this as we see below is because of high-priceed outliers. For most house-prices, our model is fairly accurate
+The total RSME is fairly high for this model and can be interpreted as how far off our model is on average from actual prices. Much if this may be caused by outliers in price, and also indicates our model's fit could improve. For future models we would look to reduce this error metric by including more variables that fit more accurately to real data. 
 
 ## Normal Distribution of Residuals
 
