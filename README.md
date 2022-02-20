@@ -195,7 +195,7 @@ We then created a new category that is the percent change between each grade. As
 
 We can see that our grade 3 has no result for percent change and our grade 4 has been massively skewed and should be ignored unless we obtain more data in the future. We then graphed our remaining results to visually interpret them.
 
-![% Change in Home Price per Sqare Foot](pictures/grade_%change_per_sqft.png)
+![% Change in Home Price per Sqare Foot](pictures/Grade_percent_change.png)
 
 
 As you can see, it would be best practice to begin with a grade 7 or lower house, then during a flip, rennovate the home until it is a grade 8 or higher as there are massive possible profit gains.
