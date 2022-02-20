@@ -133,6 +133,39 @@ The potential average profit yield from this batch of undervalued homes is appro
 ![Undervalued Homes Map](pictures/undervaluedhomes_map.png)
 
 
+# Conclusion
+
+Our data analysis suggests that price has a statistically significant correlation with the size of living space, closeness to water, and the region in which it is located in. By employing a multiple regression model with the aforementioned features, we were able to extract all of the undervalued homes from the original dataset. Homes that had a higher predicted price in the model than the actual price fit the criteria of undervalued homes. The KaPow Consulting Team recommends that our stakeholders invest in such undervalued homes, as they may have a higher potential for profit yield. The case study conducted at the end goes further to demonstrate how much profit could be up for grabs.
+
+
+# Future Investigations
+In the future, Kapow Consulting can expand its pool of data by adding data from Zillow and Realtor, evaluate if distance to attractions such as landmarks and greenspace have a strong correlation with housing prices, and even incorporate ways to find houses that can serve as short-term rentals via Airbnb data. Through these steps, we can expect to have an even more accurate model for our stakeholders.
+
+# For More Information
+Please review our full analysis in our Jupyter Notebook or our presentation.
+
+For any additional questions, please contact Soo Ho (John) Park, Nicholas Wertz, Nicholas Kennedy
+
+# Repository Structure
+You are in the README.md.
+
+In 'data' you will be able to see the dataset we worked with. The drafts to the jupyter notebook can be found in 'old_notebooks'. Moreover, 'pictures' will contain images used in this 'README.md'. Our 'Phase 2 - KC_Houses Deck.pdf' contains our google slides presentation that is intended to our stakeholders. Finally, the 'Final_notebook' is the culmination of all of our codes and interpretations.
+
+├── data/                                       <- Contains original, OneHotEncoded, and filtered datasets, as well as separate datasets for duplicate homes.
+├── old_notebooks/                              <- Various notebooks worked on for filtering, EDA, and modeling that were combined into the final notebook.
+├── pictures/                                   <- Images used for the README.md and for the Final_notebook.ipynb.
+├── README.md                                   <- README for reviewers of this project.
+├── Phase 2 - KC_Houses Deck.pdf                <- PDF of project presentation.
+├── Final_notebook.ipynb                        <- Notebook containing all combined, finalized data for project.
+
+
+
+
+
+
+
+# Appendix
+
 ## Case Study
 
 As a case study, we selected one of the homes near the average potential profit yield metric. By utilizing the coordinates (latitude, longitude) and the zipcode, we were able to search its exact location via Google Maps.
@@ -199,8 +232,3 @@ We can see that our grade 3 has no result for percent change and our grade 4 has
 
 
 As you can see, it would be best practice to begin with a grade 7 or lower house, then during a flip, rennovate the home until it is a grade 8 or higher as there are massive possible profit gains.
-
-
-# Conclusion
-
-Our data analysis suggests that price has a statistically significant correlation with the size of living space, closeness to water, and the region in which it is located in. By employing a multiple regression model with the aforementioned features, we were able to extract all of the undervalued homes from the original dataset. Homes that had a higher predicted price in the model than the actual price fit the criteria of undervalued homes. The KaPow Consulting Team recommends that our stakeholders invest in such undervalued homes, as they may have a higher potential for profit yield. The case study conducted at the end goes further to demonstrate how much profit could be up for grabs.
